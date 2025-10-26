@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useActiveAccount, useSendTransaction, useReadContract } from "thirdweb/react";
 import { prepareContractCall } from "thirdweb";
 import { contract } from "@/constants/contract";
@@ -45,6 +45,24 @@ export function JuryVoteInterface({
   const isJuror = juryData && account?.address ? 
     juryData.some((juror: string) => juror.toLowerCase() === account.address.toLowerCase()) : 
     false;
+
+  // Check localStorage for voted status on mount
+  useEffect(() => {
+    if (account?.address) {
+      const voteKey = `voted_${marketId}_${account.address.toLowerCase()}`;
+      const hasVotedBefore = localStorage.getItem(voteKey) === 'true';
+      if (hasVotedBefore) {
+        setHasVoted(true);
+      }
+    }
+  }, [account?.address, marketId]);
+
+  // Check if voting has ended
+  const isVotingEnded = () => {
+    const now = Date.now() / 1000;
+    const end = Number(votingEnd);
+    return now >= end;
+  };
 
   // Calculate time remaining
   const timeRemaining = () => {
@@ -119,6 +137,11 @@ export function JuryVoteInterface({
         description: "Your vote has been recorded successfully.",
       });
 
+      // Store voted status in localStorage and state
+      if (account?.address) {
+        const voteKey = `voted_${marketId}_${account.address.toLowerCase()}`;
+        localStorage.setItem(voteKey, 'true');
+      }
       setHasVoted(true);
     } catch (error) {
       console.error("Error voting:", error);
@@ -129,6 +152,73 @@ export function JuryVoteInterface({
       });
     }
   };
+
+  const handleFinalizeDispute = async () => {
+    try {
+      toast({
+        title: "Finalizing Dispute",
+        description: "Processing jury votes and finalizing outcome...",
+      });
+
+      const tx = prepareContractCall({
+        contract,
+        method: "function finalizeDispute(uint256 _marketId)",
+        params: [BigInt(marketId)],
+      });
+
+      await new Promise((resolve, reject) => {
+        sendTransaction(tx, {
+          onSuccess: resolve,
+          onError: reject,
+        });
+      });
+
+      toast({
+        title: "Dispute Finalized!",
+        description: "The jury's decision has been processed and the market is now resolved.",
+      });
+    } catch (error) {
+      console.error("Error finalizing dispute:", error);
+      toast({
+        title: "Finalization Failed",
+        description: error instanceof Error ? error.message : "There was an error finalizing the dispute",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // If voting has ended, show finalize button
+  if (isVotingEnded()) {
+    return (
+      <div className="text-center space-y-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+        <div className="flex items-center justify-center gap-2">
+          <Scale className="h-5 w-5 text-green-600" />
+          <h3 className="font-semibold text-green-800 dark:text-green-200">
+            Voting Period Ended
+          </h3>
+        </div>
+        <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
+          <p>Proposer&apos;s choice: <span className="font-bold">{getOutcomeText(proposedOutcome)}</span> ({Number(votesForProposer)} votes)</p>
+          <p>Disputer&apos;s choice: <span className="font-bold">{getOutcomeText(disputedOutcome)}</span> ({Number(votesForDisputer)} votes)</p>
+        </div>
+        <Button
+          onClick={handleFinalizeDispute}
+          disabled={isPending}
+          variant="default"
+          className="w-full"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Finalizing...
+            </>
+          ) : (
+            "Finalize Dispute"
+          )}
+        </Button>
+      </div>
+    );
+  }
 
   // If not a juror, show info only
   if (!isJuror) {

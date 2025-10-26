@@ -1,5 +1,5 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
-import { useActiveAccount, useReadContract } from "thirdweb/react";
+import { useActiveAccount, useReadContract, useBlockNumber } from "thirdweb/react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { contract } from "@/constants/contract";
@@ -74,6 +74,18 @@ export function MarketCard({ index, filter }: MarketCardProps) {
         contract,
         method: "function getResolutionInfo(uint256 _marketId) view returns (uint8 status, address proposer, uint8 proposedOutcome, address disputer, uint8 disputedOutcome, uint256 disputeWindowEnd, uint256 votingEnd, uint256 votesForProposer, uint256 votesForDisputer)",
         params: [BigInt(index)],
+    });
+
+    // Get the randomness block number for jury selection (to check if >256 blocks passed)
+    const { data: randomnessBlockNumber } = useReadContract({
+        contract,
+        method: "function marketResolutions(uint256) view returns (uint8 status, uint8 proposedOutcome, address proposer, uint8 disputedOutcome, address disputer, uint256 disputeWindowEnd, uint256 votingEnd, address[10] jury, uint256 randomnessBlockNumber, bool jurySelected, uint256 votesForProposer, uint256 votesForDisputer)",
+        params: [BigInt(index)],
+    });
+
+    // Get current block number
+    const { data: currentBlockNumber } = useBlockNumber({
+        contract,
     });
 
     // Parse the market data
@@ -162,6 +174,15 @@ export function MarketCard({ index, filter }: MarketCardProps) {
         
         // If resolutionInfo is not loaded yet, show loading state but don't filter out
         if (!resolutionInfo) return true;
+
+        // Check if market is in IN_DISPUTE status and blockhash expired (>256 blocks passed)
+        if (resolutionInfo.status === 3 && randomnessBlockNumber && currentBlockNumber) {
+            const blocksPassed = Number(currentBlockNumber) - Number(randomnessBlockNumber[8]); // Index 8 is randomnessBlockNumber
+            if (blocksPassed > 256) {
+                // Hide this market from frontend - jury cannot be selected anymore
+                return false;
+            }
+        }
 
         switch (filter) {
             case 'active':

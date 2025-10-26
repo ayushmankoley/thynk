@@ -36,6 +36,13 @@ export function DisputeOutcomeForm({
     params: [],
   });
 
+  // Check if dispute window has ended
+  const isDisputeWindowEnded = () => {
+    const now = Date.now() / 1000;
+    const end = Number(disputeWindowEnd);
+    return now >= end;
+  };
+
   // Calculate time remaining
   const timeRemaining = () => {
     const now = Date.now() / 1000;
@@ -137,6 +144,49 @@ export function DisputeOutcomeForm({
     }
   };
 
+  const handleFinalizeUndisputed = async () => {
+    if (!account) {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Finalizing Market",
+        description: "Finalizing market with proposed outcome...",
+      });
+
+      const finalizeTx = prepareContractCall({
+        contract,
+        method: "function finalizeUndisputed(uint256 _marketId)",
+        params: [BigInt(marketId)],
+      });
+
+      await new Promise((resolve, reject) => {
+        sendTransaction(finalizeTx, {
+          onSuccess: resolve,
+          onError: reject,
+        });
+      });
+
+      toast({
+        title: "Market Finalized!",
+        description: "The market has been resolved with the proposed outcome.",
+      });
+    } catch (error) {
+      console.error("Error finalizing market:", error);
+      toast({
+        title: "Finalization Failed",
+        description: error instanceof Error ? error.message : "There was an error finalizing the market",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Get available counter outcomes (exclude the proposed outcome)
   const getCounterOutcomes = () => {
     const outcomes = [
@@ -146,6 +196,38 @@ export function DisputeOutcomeForm({
     ];
     return outcomes.filter(o => o.value !== proposedOutcome);
   };
+
+  // If dispute window ended, show finalize button
+  if (isDisputeWindowEnded()) {
+    return (
+      <div className="text-center space-y-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+        <div className="flex items-center justify-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-green-600" />
+          <h3 className="font-semibold text-green-800 dark:text-green-200">
+            Dispute Window Ended
+          </h3>
+        </div>
+        <p className="text-sm text-green-700 dark:text-green-300">
+          No disputes were made. The proposed outcome <span className="font-bold">{getProposedOutcomeText()}</span> can now be finalized.
+        </p>
+        <Button
+          onClick={handleFinalizeUndisputed}
+          disabled={isPending}
+          variant="default"
+          className="w-full"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Finalizing...
+            </>
+          ) : (
+            "Finalize Market"
+          )}
+        </Button>
+      </div>
+    );
+  }
 
   if (!showOptions) {
     return (
