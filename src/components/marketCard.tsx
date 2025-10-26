@@ -158,7 +158,10 @@ export function MarketCard({ index, filter }: MarketCardProps) {
 
     // Check if the market should be shown based on new oracle resolution system
     const shouldShow = () => {
-        if (!market || !resolutionInfo) return false;
+        if (!market) return false;
+        
+        // If resolutionInfo is not loaded yet, show loading state but don't filter out
+        if (!resolutionInfo) return true;
 
         switch (filter) {
             case 'active':
@@ -240,7 +243,16 @@ export function MarketCard({ index, filter }: MarketCardProps) {
                             />
                         )}
                         {(() => {
-                            if (!market || !resolutionInfo) return null;
+                            if (!market) return null;
+                            
+                            // Show loading state if resolutionInfo is not yet loaded
+                            if (!resolutionInfo) {
+                                return (
+                                    <div className="text-center py-4 text-sm text-muted-foreground">
+                                        Loading market status...
+                                    </div>
+                                );
+                            }
 
                             // Check if user is the market proposer
                             const isUserProposer = account?.address?.toLowerCase() === marketProposer?.toLowerCase();

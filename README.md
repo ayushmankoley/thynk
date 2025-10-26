@@ -1,36 +1,315 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# THYNK - Decentralized Prediction Markets
 
-## Getting Started
+![THYNK Banner](./public/banner.png)
 
-First, run the development server:
+**Live Demo:** [https://peckingduck.netlify.app/](https://peckingduck.netlify.app/)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+THYNK is a fully decentralized prediction market platform built on Celo Sepolia testnet, featuring an innovative optimistic oracle system with decentralized jury resolution for disputed outcomes.
+
+## 🌟 Features
+
+### Core Functionality
+- **Create Prediction Markets**: Anyone can propose a market by staking 0.1 cUSD
+- **Trade Shares**: Buy shares on outcomes (1 share = 1 cUSD)
+- **Decentralized Resolution**: Markets are resolved through an optimistic oracle system
+- **Dispute Mechanism**: Challenge incorrect outcomes with a jury voting system
+- **Juror Staking**: Stake tokens to participate as a juror and earn rewards
+
+### Optimistic Oracle System
+1. **Propose**: After market ends, anyone can propose an outcome (requires bond)
+2. **Dispute Window**: 5-minute window to dispute the proposed outcome
+3. **Jury Selection**: If disputed, 10 random jurors are selected from the staking pool
+4. **Jury Voting**: Jurors vote on the correct outcome over 15 minutes
+5. **Finalization**: Market resolves based on jury decision, rewards distributed
+
+## 🔧 Technical Details
+
+### Smart Contract Information
+
+**Network:** Celo Sepolia Testnet (Chain ID: 11142220)
+
+**Contract Address:** `0x3a68C64f9d10Fe755e02cF6273cB4603CFf1c398`
+
+**Token Address (cUSD):** `0xdE9e4C3ce781b4bA68120d6261cbad65ce0aB00b`
+
+**Block Explorer:** [Celo Sepolia Explorer](https://explorer.celo.org/sepolia)
+
+### Contract Parameters
+- **Market Creation Stake**: 0.1 cUSD (returned if market resolves fairly)
+- **Proposal Bond**: 0.1 cUSD (required to propose/dispute outcomes)
+- **Minimum Juror Stake**: 0.5 cUSD
+- **Dispute Window**: 5 minutes
+- **Voting Duration**: 15 minutes
+- **Juror Lock Duration**: 15 minutes (after voting)
+- **Jury Size**: 10 jurors
+- **Slash Percentage**: 10% (for incorrect/non-voting jurors)
+- **Treasury Fee**: 30% (from dispute resolution pools)
+- **Creator Fee**: 1% (from winning side profits)
+- **Treasury Fee (winnings)**: 1% (from winning side profits)
+
+### Market Time Limits
+- **Minimum Duration**: 10 minutes
+- **Maximum Duration**: 365 days
+
+### Token Decimals
+- All tokens use **6 decimals** (cUSD standard on Celo)
+
+## 🏗️ Architecture
+
+### Frontend Stack
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **Web3 Integration**: thirdweb SDK v5
+- **Database**: Supabase (for off-chain metadata)
+- **Deployment**: Netlify
+
+### Smart Contract
+- **Language**: Solidity ^0.8.13
+- **Framework**: Hardhat with zkSync plugins
+- **Features**:
+  - ERC20 token integration (cUSD)
+  - Reentrancy protection
+  - Ownable pattern
+  - On-chain randomness (blockhash-based, testnet only)
+
+### Key Contract Functions
+
+#### Market Creation
+```solidity
+function proposeMarket(
+    string memory _question,
+    string memory _optionA,
+    string memory _optionB,
+    uint256 _resolutionTimestamp
+) external returns (uint256)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### Trading
+```solidity
+function buyShares(
+    uint256 _marketId,
+    bool _isOptionA,
+    uint256 _amount
+) external
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+#### Oracle Resolution
+```solidity
+function proposeOutcome(uint256 _marketId, MarketOutcome _outcome) external
+function disputeOutcome(uint256 _marketId, MarketOutcome _counterOutcome) external
+function fetchJurySelection(uint256 _marketId) external
+function submitJuryVote(uint256 _marketId, MarketOutcome _votedOutcome) external
+function finalizeDispute(uint256 _marketId) external
+function finalizeUndisputed(uint256 _marketId) external
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### Juror System
+```solidity
+function stakeForJury() external
+function unstakeFromJury() external
+function claimJuryRewards(uint256 _marketId) external
+```
 
-## Learn More
+## 🚀 Getting Started
 
-To learn more about Next.js, take a look at the following resources:
+### Prerequisites
+- Node.js 18+ and npm
+- MetaMask or compatible Web3 wallet
+- Celo Sepolia testnet cUSD tokens
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Installation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd Thynk/thynklabs
+```
 
-## Deploy on Vercel
+2. Install dependencies:
+```bash
+npm install
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Set up environment variables:
+```bash
+cp .env.example .env
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Add the following to your `.env` file:
+```env
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=your_thirdweb_client_id
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+4. Run the development server:
+```bash
+npm run dev
+```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### Getting Testnet Tokens
+
+1. **Get CELO (for gas)**:
+   - Visit [Celo Faucet](https://faucet.celo.org/)
+   - Switch to Celo Sepolia testnet
+   - Request testnet CELO
+
+2. **Get cUSD**:
+   - Use the [Celo Faucet](https://faucet.celo.org/) to get cUSD
+   - Or swap CELO for cUSD on a testnet DEX
+
+## 📖 How to Use
+
+### Creating a Market
+1. Connect your wallet (MetaMask recommended)
+2. Click "Propose Market"
+3. Fill in market details:
+   - Question
+   - Two outcome options (A & B)
+   - Resolution time (10 min - 365 days)
+   - Description and image
+4. Approve 100,000 cUSD (one-time, for multiple markets)
+5. Confirm transaction (0.1 cUSD stake required)
+
+### Trading on Markets
+1. Browse active markets
+2. Click on an option (Option A or Option B)
+3. Enter amount to bet
+4. Approve token spending (if first time)
+5. Confirm purchase
+
+### Becoming a Juror
+1. Navigate to the "Juror" page
+2. Click "Stake 0.5 cUSD"
+3. Approve and confirm transaction
+4. You're now eligible to be selected as a juror for disputes
+
+### Resolving Markets
+1. **Propose Outcome** (after market ends):
+   - Any user can propose the correct outcome
+   - Requires 0.1 cUSD bond
+   
+2. **Dispute** (during 5-minute window):
+   - Challenge incorrect proposals
+   - Requires 0.1 cUSD bond
+   - Triggers jury selection
+
+3. **Jury Vote** (if you're selected):
+   - Review both proposed outcomes
+   - Vote for the correct outcome within 15 minutes
+   - Earn rewards if you vote with the majority
+
+4. **Finalize**:
+   - Anyone can call finalize after dispute window or voting ends
+   - Market resolves and winners can claim
+
+### Claiming Rewards
+- **Traders**: Click "Claim Winnings" on resolved markets
+- **Market Creators**: Claim stake + 1% creator fees
+- **Jurors**: Claim rewards from successful jury votes
+
+## 🔐 Security Considerations
+
+⚠️ **TESTNET ONLY**: This implementation uses blockhash-based randomness which is NOT secure for mainnet. For production:
+- Use Chainlink VRF or similar VRF service
+- Implement additional security audits
+- Consider using a more robust oracle system
+
+### Known Limitations
+- Blockhash randomness is predictable by miners/validators
+- 256-block limit for blockhash availability
+- No formal security audit conducted
+
+## 🏛️ Governance & Parameters
+
+Contract owner can update:
+- Market creation stake amount
+- Proposal bond amount
+
+Via the Admin Dashboard at `/admin`
+
+## 📊 Resolution Status Flow
+
+```
+PENDING (0)
+    ↓ (market ends)
+AWAITING_PROPOSAL (1)
+    ↓ (someone proposes)
+DISPUTE_WINDOW (2)
+    ↓ (if disputed)
+IN_DISPUTE (3)
+    ↓ (jury selected)
+JURY_VOTING (4)
+    ↓ (voting complete)
+FINALIZED (5)
+```
+
+Or if not disputed:
+```
+DISPUTE_WINDOW (2)
+    ↓ (5 min passes, no dispute)
+FINALIZED (5)
+```
+
+## 🛠️ Development
+
+### Project Structure
+```
+thynklabs/
+├── src/
+│   ├── app/
+│   │   ├── admin/          # Admin dashboard
+│   │   ├── juror/          # Juror staking page
+│   │   ├── api/            # API routes
+│   │   └── page.tsx        # Main market page
+│   ├── components/
+│   │   ├── ui/             # shadcn/ui components
+│   │   ├── marketCard.tsx  # Market display
+│   │   ├── propose-*.tsx   # Oracle action components
+│   │   └── ...
+│   ├── constants/
+│   │   └── contract.ts     # Contract addresses & config
+│   ├── types/
+│   │   └── types.ts        # TypeScript types
+│   └── lib/
+│       └── supabaseClient.ts
+├── public/                 # Static assets
+└── ...config files
+```
+
+### Build for Production
+```bash
+npm run build
+```
+
+### Lint
+```bash
+npm run lint
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🔗 Links
+
+- **Live App**: [https://peckingduck.netlify.app/](https://peckingduck.netlify.app/)
+- **Contract on Explorer**: [View on Celo Sepolia](https://explorer.celo.org/sepolia/address/0x3a68C64f9d10Fe755e02cF6273cB4603CFf1c398)
+- **Celo Docs**: [https://docs.celo.org/](https://docs.celo.org/)
+- **thirdweb Docs**: [https://portal.thirdweb.com/](https://portal.thirdweb.com/)
+
+## 📧 Support
+
+For issues or questions, please open an issue on GitHub or reach out to the development team.
+
+---
+
+**Built with ❤️ on Celo**
