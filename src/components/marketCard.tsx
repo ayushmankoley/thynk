@@ -1,5 +1,5 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
-import { useActiveAccount, useReadContract, useBlockNumber } from "thirdweb/react";
+import { useActiveAccount, useReadContract } from "thirdweb/react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { contract } from "@/constants/contract";
@@ -76,17 +76,6 @@ export function MarketCard({ index, filter }: MarketCardProps) {
         params: [BigInt(index)],
     });
 
-    // Get the randomness block number for jury selection (to check if >256 blocks passed)
-    const { data: randomnessBlockNumber } = useReadContract({
-        contract,
-        method: "function marketResolutions(uint256) view returns (uint8 status, uint8 proposedOutcome, address proposer, uint8 disputedOutcome, address disputer, uint256 disputeWindowEnd, uint256 votingEnd, address[10] jury, uint256 randomnessBlockNumber, bool jurySelected, uint256 votesForProposer, uint256 votesForDisputer)",
-        params: [BigInt(index)],
-    });
-
-    // Get current block number
-    const currentBlockNumber = useBlockNumber({
-        contract,
-    });
 
     // Parse the market data
     const market: Market | undefined = marketData ? {
@@ -175,13 +164,11 @@ export function MarketCard({ index, filter }: MarketCardProps) {
         // If resolutionInfo is not loaded yet, show loading state but don't filter out
         if (!resolutionInfo) return true;
 
-        // Check if market is in IN_DISPUTE status and blockhash expired (>256 blocks passed)
-        if (resolutionInfo.status === 3 && randomnessBlockNumber && currentBlockNumber) {
-            const blocksPassed = Number(currentBlockNumber) - Number(randomnessBlockNumber[8]); // Index 8 is randomnessBlockNumber
-            if (blocksPassed > 256) {
-                // Hide this market from frontend - jury cannot be selected anymore
-                return false;
-            }
+        // Check if this market has been marked as expired (blockhash >256 blocks)
+        const isMarketExpired = localStorage.getItem(`market_expired_${index}`) === 'true';
+        if (isMarketExpired && resolutionInfo.status === 3) {
+            // Hide markets in IN_DISPUTE status that have expired
+            return false;
         }
 
         switch (filter) {

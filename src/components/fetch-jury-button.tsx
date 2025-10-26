@@ -41,11 +41,30 @@ export function FetchJuryButton({ marketId }: FetchJuryButtonProps) {
       });
     } catch (error) {
       console.error("Error fetching jury:", error);
-      toast({
-        title: "Jury Selection Failed",
-        description: error instanceof Error ? error.message : "There was an error selecting the jury",
-        variant: "destructive",
-      });
+      const errorMessage = error instanceof Error ? error.message : "There was an error selecting the jury";
+      
+      // Check if error is due to blockhash expiry (>256 blocks)
+      if (errorMessage.includes("Blockhash not available") || errorMessage.includes("256 blocks")) {
+        // Mark this market as expired in localStorage
+        localStorage.setItem(`market_expired_${marketId}`, 'true');
+        
+        toast({
+          title: "Market Expired",
+          description: "This dispute has expired (>256 blocks passed). The market will be hidden.",
+          variant: "destructive",
+        });
+        
+        // Reload page to hide the market
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        toast({
+          title: "Jury Selection Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
   };
 
