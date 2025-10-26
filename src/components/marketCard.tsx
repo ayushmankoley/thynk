@@ -84,7 +84,7 @@ export function MarketCard({ index, filter }: MarketCardProps) {
     });
 
     // Get current block number
-    const { data: currentBlockNumber } = useBlockNumber({
+    const currentBlockNumber = useBlockNumber({
         contract,
     });
 
