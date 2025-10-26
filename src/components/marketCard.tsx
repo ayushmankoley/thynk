@@ -262,8 +262,20 @@ export function MarketCard({ index, filter }: MarketCardProps) {
 
                             // Switch based on resolution status
                             switch (resolutionInfo.status) {
-                                case 0: // PENDING - market is still active for trading
-                                    return <MarketBuyInterface marketId={index} market={market} />;
+                                case 0: // PENDING - check if market has ended
+                                    if (isExpired) {
+                                        // Market ended, needs outcome proposal
+                                        return (
+                                            <ProposeOutcomeButton
+                                                marketId={index}
+                                                optionA={market.optionA}
+                                                optionB={market.optionB}
+                                            />
+                                        );
+                                    } else {
+                                        // Market still active for trading
+                                        return <MarketBuyInterface marketId={index} market={market} />;
+                                    }
 
                                 case 1: // AWAITING_PROPOSAL - waiting for someone to propose outcome
                                     return (
