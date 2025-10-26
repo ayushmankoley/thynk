@@ -2,7 +2,7 @@
 
 ![THYNK Banner](./public/banner.png)
 
-**Live Demo:** [https://peckingduck.netlify.app/](https://peckingduck.netlify.app/)
+**Live Demo:** [https://thynk.netlify.app/](https://thynk.netlify.app/)
 
 THYNK is a fully decentralized prediction market platform built on Celo Sepolia testnet, featuring an innovative optimistic oracle system with decentralized jury resolution for disputed outcomes.
 
@@ -212,17 +212,7 @@ npm run dev
 - **Market Creators**: Claim stake + 1% creator fees
 - **Jurors**: Claim rewards from successful jury votes
 
-## 🔐 Security Considerations
 
-⚠️ **TESTNET ONLY**: This implementation uses blockhash-based randomness which is NOT secure for mainnet. For production:
-- Use Chainlink VRF or similar VRF service
-- Implement additional security audits
-- Consider using a more robust oracle system
-
-### Known Limitations
-- Blockhash randomness is predictable by miners/validators
-- 256-block limit for blockhash availability
-- No formal security audit conducted
 
 ## 🏛️ Governance & Parameters
 
@@ -301,7 +291,7 @@ This project is licensed under the MIT License.
 
 ## 🔗 Links
 
-- **Live App**: [https://peckingduck.netlify.app/](https://peckingduck.netlify.app/)
+- **Live App**: [https://thynk.netlify.app/](https://thynk.netlify.app/)
 - **Contract on Explorer**: [View on Celo Sepolia](https://explorer.celo.org/sepolia/address/0x3a68C64f9d10Fe755e02cF6273cB4603CFf1c398)
 - **Celo Docs**: [https://docs.celo.org/](https://docs.celo.org/)
 - **thirdweb Docs**: [https://portal.thirdweb.com/](https://portal.thirdweb.com/)
@@ -312,4 +302,4 @@ For issues or questions, please open an issue on GitHub or reach out to the deve
 
 ---
 
-**Built with ❤️ on Celo**
+**Built with ❤️ by Team Oddsy on Celo**

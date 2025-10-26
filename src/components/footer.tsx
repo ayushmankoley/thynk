@@ -9,16 +9,16 @@ export function Footer() {
                     <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
                         Built by{" "}
                         <Link
-                            href="https://twitter.com/yourusername"
+                            href="https://github.com/ayushmankoley/thynk"
                             target="_blank"
                             rel="noreferrer"
                             className="font-medium underline underline-offset-4"
                         >
-                            your-name
+                            Team Oddsy
                         </Link>
                         . The source code is available on{" "}
                         <Link
-                            href="https://github.com/yourusername/your-repo"
+                            href="https://github.com/ayushmankoley/thynk"
                             target="_blank"
                             rel="noreferrer"
                             className="font-medium underline underline-offset-4"
@@ -30,7 +30,7 @@ export function Footer() {
                 </div>
                 <div className="flex items-center gap-4">
                     <Link
-                        href="https://github.com/yourusername/your-repo"
+                        href="https://github.com/ayushmankoley/thynk"
                         target="_blank"
                         rel="noreferrer"
                     >

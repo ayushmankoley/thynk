@@ -165,11 +165,14 @@ export function MarketCard({ index, filter }: MarketCardProps) {
 
         switch (filter) {
             case 'active':
-                // Show markets that are still in trading period (PENDING status, before endTime)
+                // Show markets that are still in trading period (not expired yet)
                 return !isExpired && resolutionInfo.status === 0; // 0 = PENDING
             case 'pending':
-                // Show markets in oracle resolution process (AWAITING_PROPOSAL through JURY_VOTING)
-                return resolutionInfo.status >= 1 && resolutionInfo.status <= 4; // 1-4 = resolution in progress
+                // Show markets that have ended and need resolution:
+                // 1. Markets that ended but no outcome proposed yet (PENDING but expired)
+                // 2. Markets in oracle resolution process (AWAITING_PROPOSAL through JURY_VOTING)
+                return (isExpired && resolutionInfo.status === 0) || 
+                       (resolutionInfo.status >= 1 && resolutionInfo.status <= 4);
             case 'resolved':
                 // Show finalized markets
                 return resolutionInfo.status === 5; // 5 = FINALIZED
