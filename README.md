@@ -32,7 +32,7 @@ THYNK is a fully decentralized prediction market platform built on Celo Sepolia 
 
 **Token Address (cUSD):** `0xdE9e4C3ce781b4bA68120d6261cbad65ce0aB00b`
 
-**Block Explorer:** [Celo Sepolia Explorer](https://explorer.celo.org/sepolia)
+**Block Explorer:** [Celo Sepolia Explorer](https://celo-sepolia.blockscout.com/address/0x3a68C64f9d10Fe755e02cF6273cB4603CFf1c398)
 
 ### Contract Parameters
 - **Market Creation Stake**: 0.1 cUSD (returned if market resolves fairly)
@@ -292,7 +292,7 @@ This project is licensed under the MIT License.
 ## 🔗 Links
 
 - **Live App**: [https://thynk.netlify.app/](https://thynk.netlify.app/)
-- **Contract on Explorer**: [View on Celo Sepolia](https://explorer.celo.org/sepolia/address/0x3a68C64f9d10Fe755e02cF6273cB4603CFf1c398)
+- **Contract on Explorer**: [View on Celo Sepolia](https://celo-sepolia.blockscout.com/address/0x3a68C64f9d10Fe755e02cF6273cB4603CFf1c398)
 - **Celo Docs**: [https://docs.celo.org/](https://docs.celo.org/)
 - **thirdweb Docs**: [https://portal.thirdweb.com/](https://portal.thirdweb.com/)
 
